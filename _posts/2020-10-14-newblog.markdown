@@ -1,0 +1,14 @@
+---
+layout:     post
+title:      "new blog"
+subtitle:   "这是一篇测试post"
+date:       2020-10-14 18:40:00
+author:     "xnchen"
+header-img: "img/home-bg.jpg"
+tags:
+    - test
+---
+
+### abstract
+
+test post
