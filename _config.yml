@@ -4,7 +4,6 @@ future: true
 # git settings
 lsi: false
 safe: true
-source: [kyokoning/kyokoning.github.io]
 incremental: false
 gist:
   noscript: false
