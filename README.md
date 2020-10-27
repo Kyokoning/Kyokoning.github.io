@@ -1,3 +1,3 @@
 # xnchen blog
 
-test time
+[click here](kyokoning.github.io)
