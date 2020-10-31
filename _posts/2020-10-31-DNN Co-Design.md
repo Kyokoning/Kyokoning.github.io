@@ -40,7 +40,7 @@ DAC19
 ##### 3.1Co-design space
 
 搜索空间包含了FPGA和DNN设计。搜索空间的表示如下表所示：
-![image](https://github.com/Kyokoning/Kyokoning.github.io/img/paper-cut/DNN Co-Design-1604140759762.png)
+![image](https://github.com/Kyokoning/Kyokoning.github.io/tree/main/img/paper-cut/DNN Co-Design-1604140759762.png)
 
 >`L`：DNN的总层数IP1到
 `IPm`：表示可用的可配置的IP模板
@@ -62,7 +62,7 @@ DAC19
 3. Tile-Arch：用于DNN实现的低延迟FPGA加速器模板。
 4. auto-HLS：快速的board-level design 生成器，将DNN自动映射到FPGA。
 
-![image](https://github.com/Kyokoning/Kyokoning.github.io/img/paper-cut/DNN Co-Design-1604140783256.png)
+![image](https://github.com/Kyokoning/Kyokoning.github.io/tree/main/img/paper-cut/DNN Co-Design-1604140783256.png)
 
 整个流程的输入包括了：
 - 目标任务
@@ -82,7 +82,7 @@ DAC19
 
 bundle指一个序列的DNN layer，用作基础的DNN模块。
 
-![](https://github.com/Kyokoning/Kyokoning.github.io/img/paper-cut/DNN Co-Design-1604140806334.png)
+![](https://github.com/Kyokoning/Kyokoning.github.io/tree/main/img/paper-cut/DNN Co-Design-1604140806334.png)
 
 每个bundle的输入输出通道数可能不同。
 
@@ -113,7 +113,7 @@ tile-arch是一种细粒度的tile-based流水线加速结构，用于将DNN映�
 - tile-level IP重用：因为layer-level的数据重用，各层之间的中间数据被划分为大小相同的tile，多个tile重用一个IP实例。这使得可以在IP实例间直接进行数据传输，无需片内/外存储器访问。
 - tile-level流水线：由于层内的数据tile不具有数据依赖性，可以在层内和连续的层之间利用tile-level IP流水线（这又是在说什么）
 
-![](https://github.com/Kyokoning/Kyokoning.github.io/img/paper-cut/DNN Co-Design-1604140826977.png)
+![](https://github.com/Kyokoning/Kyokoning.github.io/tree/main/img/paper-cut/DNN Co-Design-1604140826977.png)
 
 在上图(a)中展示了一个top-level bundle架构。on-chip data buffer被放置在BRAM中，进行Bundle内的交流。off-chip data buffer则放在DRAM中，进行bundle间交流。(b)展示了3个tile在一个bundle内的tile-level 流水线。
 
@@ -150,7 +150,7 @@ $$
 2. 在DNN中重复Bundle n次
 
 为了快速评估，每个DNN都只训练20epoch，然后在坐标图上表示：
-![](https://github.com/Kyokoning/Kyokoning.github.io/img/paper-cut/DNN Co-Design-1604140859661.png)
+![](https://github.com/Kyokoning/Kyokoning.github.io/tree/main/img/paper-cut/DNN Co-Design-1604140859661.png)
 (a)是方法1，(b)是方法2。坐标是<latency,accuracy>，半径大小是resouce。
 PF指的是parallel factors，并行参数不同使得lantency和resource不一样，但是accuracy是一样的。我们会选择在pareto曲线上的bundle组合（估计是在PF相同的情况下最向左上偏的点？）
 
@@ -161,7 +161,7 @@ PF指的是parallel factors，并行参数不同使得lantency和resource不一�
 在粗粒度评估之后，在对选取的bundle执行细粒度评估，以得到其特性。
 使用方法2和不同的activation function（例如Relu4和Relu8，和数据量化方法有关）来构造DNN
 下图展示了细粒度评估的结果，不同的bundle有其特征（然而加这些有什么意义呢（？
-![](https://github.com/Kyokoning/Kyokoning.github.io/img/paper-cut/DNN Co-Design-1604140871041.png)
+![](https://github.com/Kyokoning/Kyokoning.github.io/tree/main/img/paper-cut/DNN Co-Design-1604140871041.png)
 
 #### 5.2 硬件感知的DNN搜索和更新
 
@@ -169,4 +169,4 @@ PF指的是parallel factors，并行参数不同使得lantency和resource不一�
 为什么感觉硬件看了论文也什么都看不懂呢
 这就是硬件吗
 
-![](https://github.com/Kyokoning/Kyokoning.github.io/img/paper-cut/DNN Co-Design-1604140879166.png)
+![](https://github.com/Kyokoning/Kyokoning.github.io/tree/main/img/paper-cut/DNN Co-Design-1604140879166.png)

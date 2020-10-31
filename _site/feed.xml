@@ -5,9 +5,384 @@
     <description>时间是摸出来的</description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Wed, 14 Oct 2020 19:21:44 +0800</pubDate>
-    <lastBuildDate>Wed, 14 Oct 2020 19:21:44 +0800</lastBuildDate>
+    <pubDate>Sat, 31 Oct 2020 19:15:27 +0800</pubDate>
+    <lastBuildDate>Sat, 31 Oct 2020 19:15:27 +0800</lastBuildDate>
     <generator>Jekyll v4.1.1</generator>
+    
+      <item>
+        <title>FPGA/DNN Co-Design: An Efficient Design Methodology for IoT Intelligence on the Edge</title>
+        <description>&lt;p&gt;DAC19&lt;/p&gt;
+
+&lt;p&gt;使用SCD而不是SGD去优化神经网络。&lt;/p&gt;
+
+&lt;p&gt;是一个将训练和implementation分开的工作。&lt;/p&gt;
+
+&lt;p&gt;使用自动化工具自动生成硬件HLS&lt;/p&gt;
+
+&lt;p&gt;训练的时候是hardware-aware的&lt;/p&gt;
+
+&lt;p&gt;搜索空间感觉是2017年的风格，简单的cell堆叠就是了&lt;/p&gt;
+
+&lt;p&gt;硬件的论文真的难以看懂，看了也不知道他们在干什么&lt;/p&gt;
+
+&lt;h4 id=&quot;摘要&quot;&gt;摘要&lt;/h4&gt;
+&lt;p&gt;本文提出了一个FPGA/DNN协同设计方法：从下到上的面向硬件的DNN模型搜索；从上到下的针对DNN特点的FPGA加速器设计。本文构建了一个自动的协同搜索设计流程，一个执行面向硬件的DNN搜索模型，和用于为搜索的DNN生成FPGA可综合C代码的Auto-HLS引擎。使用PYNQ-Z1进行对象检测任务。本文的方法在所有方面都优于最新的FPGA设计，包括IoU、FPS、power consumption和能量效率。和GPU相比，精度相似但能耗少。&lt;/p&gt;
+
+&lt;h4 id=&quot;1介绍&quot;&gt;1.介绍&lt;/h4&gt;
+
+&lt;p&gt;本文贡献：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;FPGA/DNN协同设计方法。&lt;/li&gt;
+  &lt;li&gt;对于DNN模型的设计，引入DNN模板，以可预测的性能和资源利用率来指导DNN的生成。从而大大减少了搜索空间。&lt;/li&gt;
+  &lt;li&gt;对于FPGA加速器设计，本文提出了tile-based细粒度流水线架构，可以使用高度优化的HLS IP库生成所需的DNN。在这种架构的基础上，提出自动HLS生成器Auto-HLS，直接根据dnn模型生成C代码。&lt;/li&gt;
+  &lt;li&gt;在PYNQ-Z1开发板上进行试验。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;3协同设计&quot;&gt;3.协同设计&lt;/h4&gt;
+
+&lt;h5 id=&quot;31co-design-space&quot;&gt;3.1Co-design space&lt;/h5&gt;
+
+&lt;p&gt;搜索空间包含了FPGA和DNN设计。搜索空间的表示如下表所示：
+&lt;img src=&quot;https://github.com/Kyokoning/Kyokoning.github.io/tree/main/img/paper-cut/DNN Co-Design-1604140759762.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;L&lt;/code&gt;：DNN的总层数IP1到
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IPm&lt;/code&gt;：表示可用的可配置的IP模板
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;p1到pn&lt;/code&gt;：表示已经配置的IP实例每个IP
+实例pj包括了配置参数&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;PFj, Qj&amp;gt;&lt;/code&gt;。PFj是并行参数，Qj是量化方法。
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;lj , · · · lj &amp;gt;&lt;/code&gt;: 表示在FPGA中使用IP实例pj进行计算的层
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;fch1 , fch2 , · · · , fchL &amp;gt;&lt;/code&gt;：DNN中通道深度的扩展（？啥意思the expansions of channel depth through the entire DNN
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ds1到dsk&lt;/code&gt;：表示具有下采样因子fdsi的下采样层
+这些参数可以确定DNN模型和FPGA加速器设计。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h5 id=&quot;32总体co-design流程&quot;&gt;3.2总体co-design流程&lt;/h5&gt;
+
+&lt;p&gt;结构分为
+对于DNN：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;bundle-arch：硬件感知的DNN构建模块模板。&lt;/li&gt;
+  &lt;li&gt;auto-DNN：自动搜索引擎，用于在硬件资源和性能约束下搜索DNN&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;对于FPGA：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;Tile-Arch：用于DNN实现的低延迟FPGA加速器模板。&lt;/li&gt;
+  &lt;li&gt;auto-HLS：快速的board-level design 生成器，将DNN自动映射到FPGA。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://github.com/Kyokoning/Kyokoning.github.io/tree/main/img/paper-cut/DNN Co-Design-1604140783256.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;整个流程的输入包括了：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;目标任务&lt;/li&gt;
+  &lt;li&gt;目标FPGA和其资源限制（DSP、LUTs、memory等）&lt;/li&gt;
+  &lt;li&gt;加速器的性能目标（例如延迟）&lt;/li&gt;
+  &lt;li&gt;可配置的IP模板。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;输出包括了面向硬件的DNN模型及其FPGA加速器。&lt;/p&gt;
+
+&lt;p&gt;设计流程：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;构建模块和DNN建模：根据DNN模块和硬件IP池，首先构造分析模型来估计硬件的latency和资源利用率，并且构造DNN。这一步在DNN搜索的早期阶段提供性能评估&lt;/li&gt;
+  &lt;li&gt;模块选择：autoDNN会根据lantency、资源利用和精确度执行细粒度和粗粒度评估，来选择building block进行进一步的DNN搜索。&lt;/li&gt;
+  &lt;li&gt;硬件感知的DNN搜索和更新：给定选中的buiding block，auto DNN使用SCD（&lt;a href=&quot;https://zh.wikipedia.org/wiki/%E5%9D%90%E6%A0%87%E4%B8%8B%E9%99%8D%E6%B3%95&quot;&gt;随机坐标下降&lt;/a&gt;）在给定资源和延迟约束下搜索DNN。从SCD输出的DNN被送到auto-HLS，获得更精确的性能和资源结果，并反馈给SCD进行更新。得到的候选DNN将进行训练。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;4dnn和加速器模板&quot;&gt;4.DNN和加速器模板&lt;/h4&gt;
+&lt;h5 id=&quot;41-bundle-arch硬件感知的dnn模板&quot;&gt;4.1 Bundle-Arch：硬件感知的DNN模板&lt;/h5&gt;
+
+&lt;p&gt;bundle指一个序列的DNN layer，用作基础的DNN模块。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://github.com/Kyokoning/Kyokoning.github.io/tree/main/img/paper-cut/DNN Co-Design-1604140806334.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;每个bundle的输入输出通道数可能不同。&lt;/p&gt;
+
+&lt;p&gt;在bundle之间，使用下采样进行特征图大小压缩。&lt;/p&gt;
+
+&lt;p&gt;Bundle也是根据本文提出FPGA实现的Tile-Arch进行组织的，能够提供低延迟。&lt;/p&gt;
+
+&lt;p&gt;（其实就是NAS中的预设计cell，这使得人工DNN的智慧加入了网络，但是NAS的自由度变少了）&lt;/p&gt;
+
+&lt;h5 id=&quot;42-bundle生成&quot;&gt;4.2 bundle生成&lt;/h5&gt;
+
+&lt;p&gt;为了生成候选bundle，选择了下述的IP（也就是DNN layer）：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;conv 1x1，3x3，5x5&lt;/li&gt;
+  &lt;li&gt;depth-wise conv 3x3，5x5，7x7&lt;/li&gt;
+  &lt;li&gt;max/avg pooling&lt;/li&gt;
+  &lt;li&gt;normalization&lt;/li&gt;
+  &lt;li&gt;activation&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;在FPGA实现中，每个IP需要至少一个实例，更多的IP意味着更多的资源开销。本文实现中，每个bundle内最多有两个计算IP，因为目标是在IoT设备上实现。&lt;/p&gt;
+
+&lt;p&gt;总共生成了18个bundle候选。首先需要对这些bundle进行评估，然后准确性和硬件特性最好的用于进行DNN搜索（section 5.1）。&lt;/p&gt;
+
+&lt;h5 id=&quot;43-tile-arch低延迟的加速器模板&quot;&gt;4.3 Tile-Arch：低延迟的加速器模板&lt;/h5&gt;
+
+&lt;p&gt;tile-arch是一种细粒度的tile-based流水线加速结构，用于将DNN映射到FPGA上。该模板具有以下功能：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;layer-level IP重用：采用折叠式整体结构，DNN层通过跨层重用IP实例的方法顺序计算（这是又在说什么）。&lt;/li&gt;
+  &lt;li&gt;tile-level IP重用：因为layer-level的数据重用，各层之间的中间数据被划分为大小相同的tile，多个tile重用一个IP实例。这使得可以在IP实例间直接进行数据传输，无需片内/外存储器访问。&lt;/li&gt;
+  &lt;li&gt;tile-level流水线：由于层内的数据tile不具有数据依赖性，可以在层内和连续的层之间利用tile-level IP流水线（这又是在说什么）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://github.com/Kyokoning/Kyokoning.github.io/tree/main/img/paper-cut/DNN Co-Design-1604140826977.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;在上图(a)中展示了一个top-level bundle架构。on-chip data buffer被放置在BRAM中，进行Bundle内的交流。off-chip data buffer则放在DRAM中，进行bundle间交流。(b)展示了3个tile在一个bundle内的tile-level 流水线。&lt;/p&gt;
+
+&lt;h5 id=&quot;44-bundle和dnn的性能建模&quot;&gt;4.4 Bundle和DNN的性能建模&lt;/h5&gt;
+
+&lt;p&gt;资源和latency&lt;/p&gt;
+
+&lt;h6 id=&quot;441-bundle的性能建模&quot;&gt;4.4.1 bundle的性能建模&lt;/h6&gt;
+
+&lt;p&gt;以一个bundle bundi为例，其资源为：
+\(Res^r_{bund_i} = \sum_{p_j}Res^r_{bund_i}+\Gamma^r_i\)&lt;/p&gt;
+
+&lt;p&gt;前一项是bundle使用的IP实例的资源使用，后一项是控制逻辑和多路复用器使用的资源（例如LUTs）&lt;/p&gt;
+
+&lt;p&gt;bundle的latency为：
+\(Lat_{bund_i}=\alpha_i\cdot\sum_{p_j}Comp_j+\frac{\beta_i\cdot\Theta(Data_i)}{bw}\)&lt;/p&gt;
+
+&lt;p&gt;前一项是实例pj的计算延迟， 后一项是传输off-chip数据导致的延迟。&lt;/p&gt;
+
+&lt;p&gt;(……实在不想看了&lt;/p&gt;
+
+&lt;h4 id=&quot;5dnn搜索和更新&quot;&gt;5.DNN搜索和更新&lt;/h4&gt;
+&lt;h5 id=&quot;51-bundle的评估和选择&quot;&gt;5.1 bundle的评估和选择&lt;/h5&gt;
+&lt;h6 id=&quot;511-粗粒度的评估&quot;&gt;5.1.1 粗粒度的评估&lt;/h6&gt;
+
+&lt;p&gt;使用三个维度来评价bundle，分别是latency、resource和accuracy。其中，latency和resource在4.4章节描述了怎么计算，而accuracy则通过bundle构造DNN并训练来得到。&lt;/p&gt;
+
+&lt;p&gt;有两种方法使用bundle构造DNN：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;使用由固定头部和尾部的DNN模板，中间插入一个Bundle&lt;/li&gt;
+  &lt;li&gt;在DNN中重复Bundle n次&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;为了快速评估，每个DNN都只训练20epoch，然后在坐标图上表示：
+&lt;img src=&quot;https://github.com/Kyokoning/Kyokoning.github.io/tree/main/img/paper-cut/DNN Co-Design-1604140859661.png&quot; alt=&quot;&quot; /&gt;
+(a)是方法1，(b)是方法2。坐标是&amp;lt;latency,accuracy&amp;gt;，半径大小是resouce。
+PF指的是parallel factors，并行参数不同使得lantency和resource不一样，但是accuracy是一样的。我们会选择在pareto曲线上的bundle组合（估计是在PF相同的情况下最向左上偏的点？）&lt;/p&gt;
+
+&lt;p&gt;可以发现无论是方法1还是2都能到处相似的答案。&lt;/p&gt;
+
+&lt;h6 id=&quot;512-细粒度的评估&quot;&gt;5.1.2 细粒度的评估&lt;/h6&gt;
+
+&lt;p&gt;在粗粒度评估之后，在对选取的bundle执行细粒度评估，以得到其特性。
+使用方法2和不同的activation function（例如Relu4和Relu8，和数据量化方法有关）来构造DNN
+下图展示了细粒度评估的结果，不同的bundle有其特征（然而加这些有什么意义呢（？
+&lt;img src=&quot;https://github.com/Kyokoning/Kyokoning.github.io/tree/main/img/paper-cut/DNN Co-Design-1604140871041.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;52-硬件感知的dnn搜索和更新&quot;&gt;5.2 硬件感知的DNN搜索和更新&lt;/h4&gt;
+
+&lt;p&gt;就 感觉也没有很细节
+为什么感觉硬件看了论文也什么都看不懂呢
+这就是硬件吗&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://github.com/Kyokoning/Kyokoning.github.io/tree/main/img/paper-cut/DNN Co-Design-1604140879166.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+</description>
+        <pubDate>Sun, 01 Nov 2020 02:28:00 +0800</pubDate>
+        <link>http://localhost:4000/2020/11/01/DNN-Co-Design/</link>
+        <guid isPermaLink="true">http://localhost:4000/2020/11/01/DNN-Co-Design/</guid>
+        
+        <category>NAS</category>
+        
+        <category>FPGA</category>
+        
+        <category>paper reading</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>桃屋，yyds</title>
+        <description>&lt;h2 id=&quot;今日正事&quot;&gt;今日正事&lt;/h2&gt;
+
+&lt;p&gt;把这个blog的几个bug修了一下，总算可以写latex了（虽然实际上也不会）。&lt;/p&gt;
+
+&lt;p&gt;加了markdown的菜单用来代替evernote里面的[TOC]。&lt;/p&gt;
+
+&lt;p&gt;本来想加img的，但是不知道为什么链接点进去是ok的，但是图片无法在blog里加载出来。怀疑是因为这种链接不支持文件名称中的空格命名，但是懒得再调了。&lt;/p&gt;
+
+&lt;p&gt;一个测试用的&lt;a href=&quot;kyokoning.github.io/2020/10/31/DNN-Co-Design&quot;&gt;博文&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;标题的事&quot;&gt;标题的事&lt;/h2&gt;
+
+&lt;p&gt;周六早上例行的七点半起床，去上工艺课，实际上是看自己的书看一早上。&lt;/p&gt;
+
+&lt;p&gt;中午和学妹吃了桃屋。&lt;/p&gt;
+
+&lt;p&gt;说起了大一的时候第一次来吃桃屋的事情。是很好的辅导员带我来的。&lt;/p&gt;
+
+&lt;p&gt;明明过了五年，但是这件事仿佛近在眼前。如今我甚至比当时的辅导员还要年长了……&lt;/p&gt;
+
+</description>
+        <pubDate>Sun, 01 Nov 2020 02:02:00 +0800</pubDate>
+        <link>http://localhost:4000/2020/11/01/%E8%87%AA%E6%88%91%E5%AE%9E%E7%8E%B0%E6%98%AF%E5%90%A6%E6%98%AF%E4%B8%AA%E9%99%B7%E9%98%B1/</link>
+        <guid isPermaLink="true">http://localhost:4000/2020/11/01/%E8%87%AA%E6%88%91%E5%AE%9E%E7%8E%B0%E6%98%AF%E5%90%A6%E6%98%AF%E4%B8%AA%E9%99%B7%E9%98%B1/</guid>
+        
+        <category>daily post</category>
+        
+        <category>xjbx</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>实现的过程是痛苦的过程</title>
+        <description>&lt;p&gt;不幸的是，这几天好像进入了某种身体能力的低谷阶段。
+昨天凌晨准备睡觉的时候，胃里一阵疼痛酸胀，但是只能吐出泡泡（？）。&lt;/p&gt;
+
+&lt;p&gt;早上起来整个人的肺部还是尾部痛到受不了，在床上打滚（这也是玩塞尔达的原因）。&lt;/p&gt;
+
+&lt;p&gt;到底，到底发生了什么呢……？&lt;/p&gt;
+
+&lt;p&gt;难道说——前天的药片并没有被吞下，而是突破了喉咙进入了肺部？
+这是小时候观看的某一集走近科学，躺在床上想着这件事不由得恐惧了起来。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;虽然是用来做学术blog的地方，但是为什么没法用latex……&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;下午对zxy的第一次pj-gcd开了第二次会，就各位的进度问题进行了亲切的切磋。&lt;/p&gt;
+
+&lt;p&gt;我和lyw对糊弄pj这件事偷偷达成了共识，而学妹非常奋斗逼地想出了两种改进策略。
+内卷，这就是内卷吗！&lt;/p&gt;
+
+&lt;p&gt;还好昨天看了一下算法，不然我就死掉了（&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;晚上继续看计算机网络，我看书看几十分钟就开始犯困的习惯是改不掉了。&lt;/p&gt;
+
+</description>
+        <pubDate>Sat, 31 Oct 2020 06:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2020/10/31/%E5%A6%82%E6%9E%9C%E6%88%91%E6%9C%89%E6%A2%A6%E6%83%B3/</link>
+        <guid isPermaLink="true">http://localhost:4000/2020/10/31/%E5%A6%82%E6%9E%9C%E6%88%91%E6%9C%89%E6%A2%A6%E6%83%B3/</guid>
+        
+        <category>daily post</category>
+        
+        <category>xjbx</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>往者不可谏，来者犹可追</title>
+        <description>&lt;p&gt;昨天没写日报，是有理由的。&lt;/p&gt;
+
+&lt;p&gt;10.27的晚上，吃下了例行的药片，也没有灌水，像是平常一样准备去睡觉了。&lt;/p&gt;
+
+&lt;p&gt;但是药片却没有顺畅地滑下去，像是被黏在了干燥的咽喉粘膜一样。于是我又爬起来喝了一口水，在药力作用下昏昏沉沉地睡去了。&lt;/p&gt;
+
+&lt;p&gt;结果就是第二天早上七点就被喉咙里梗住的感觉弄醒，并且再也睡不着了。本来想着这应该只是痛觉残留之类的，等一会儿就好了，于是在床上玩了一两个小时的手机。&lt;/p&gt;
+
+&lt;p&gt;又爬起来玩了会儿塞尔达（顺便一提，怎么会有在床上玩塞尔达然后血崩的人啊——）。&lt;/p&gt;
+
+&lt;p&gt;直到中午这股痛觉还残留在喉头，我才感觉不对。起床去校医院，校医院的医生表示只能去外面的医院看了。&lt;/p&gt;
+
+&lt;p&gt;到曙光医院都五点了，只能去急诊，然而急诊也没得挂，护士跟我说只能门诊的时候来看~&lt;/p&gt;
+
+&lt;p&gt;喉咙，好痛。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;为了找blog版头照片，打开了Pinterest，然后……就没有然后了……&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;我以为今天我能做完算法分析：算法分析这么简单不就写写python，我去用装饰器做，简单&lt;/p&gt;
+
+&lt;p&gt;然后就被装饰器搞死了，为什么我不相信自己是一个垃圾选手呢……&lt;/p&gt;
+
+&lt;p&gt;晚上写算法report写到怀疑人生，如果回到研一上，我可能活不过10月。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;今天仍然是毕设一事无成的一天……&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;乌乌乌，等待子子一起走的时间就像是我在等着妈妈接我回家。&lt;/p&gt;
+</description>
+        <pubDate>Fri, 30 Oct 2020 05:43:00 +0800</pubDate>
+        <link>http://localhost:4000/2020/10/30/%E5%8F%88%E6%98%AF%E4%B8%80%E5%A4%A9/</link>
+        <guid isPermaLink="true">http://localhost:4000/2020/10/30/%E5%8F%88%E6%98%AF%E4%B8%80%E5%A4%A9/</guid>
+        
+        <category>daily post</category>
+        
+        <category>xjbx</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>试图开始写日报</title>
+        <description>&lt;p&gt;决定从今天开始每天花十分钟写日报。&lt;/p&gt;
+
+&lt;p&gt;就随便写点随笔或者今天干了什么。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;计算机网络第四五章终于开始变得有趣了，摆脱了看一段打哈欠打一分钟的情况，
+说明果然错的不是这本书也不是我，是硬件。&lt;/p&gt;
+
+&lt;p&gt;知道了好多豆知识：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;子网掩码是干什么的&lt;/li&gt;
+  &lt;li&gt;为什么本地ip都是10.或者192.开头&lt;/li&gt;
+  &lt;li&gt;MAC地址是什么&lt;/li&gt;
+  &lt;li&gt;VPN是什么&lt;/li&gt;
+  &lt;li&gt;端口号是干什么的&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;……等等等等。&lt;/p&gt;
+
+&lt;p&gt;这让我想起了10年前后的某次搬家，在书房设置了半天pc的拨号上网，
+对着路由器的设置界面抓瞎的那个下午。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;被出演txl的日圈演员的频率总结笑死，对就是你，0野刚。&lt;/p&gt;
+
+&lt;p&gt;4月的时候还有人念叨，什么时候刚刚能当1啊~&lt;/p&gt;
+
+&lt;p&gt;所以就来当源源的1了吗，初1，不错子。&lt;/p&gt;
+
+&lt;p&gt;去找了&lt;em&gt;影里&lt;/em&gt;的资源，rwkk美女刚刚。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;老陈开会，春节之前做完工作70%内容，这是真实的吗？
+毕业设计这件事情明明就是所有人的逢场作戏。&lt;/p&gt;
+
+&lt;p&gt;我发现了ky就是和你关系好就要来ky你，受不了了还会被说一句”不大气”，离谱（&lt;/p&gt;
+
+&lt;p&gt;导师，要不是看你工资发得多，我早就跑路了，用得着到现在吗，希望你不要不识抬举。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;读到计算机网络263页。&lt;/p&gt;
+
+</description>
+        <pubDate>Wed, 28 Oct 2020 00:49:00 +0800</pubDate>
+        <link>http://localhost:4000/2020/10/28/%E4%BB%8A%E5%A4%A9%E5%BC%80%E5%A7%8B%E5%86%99%E6%97%A5%E6%8A%A5/</link>
+        <guid isPermaLink="true">http://localhost:4000/2020/10/28/%E4%BB%8A%E5%A4%A9%E5%BC%80%E5%A7%8B%E5%86%99%E6%97%A5%E6%8A%A5/</guid>
+        
+        <category>daily post</category>
+        
+        <category>xjbx</category>
+        
+        
+      </item>
     
       <item>
         <title>new blog</title>
@@ -20,84 +395,6 @@
         <guid isPermaLink="true">http://localhost:4000/2020/10/15/newblog/</guid>
         
         <category>test</category>
-        
-        
-      </item>
-    
-      <item>
-        <title>Welcome to Hux Blog</title>
-        <description>&lt;blockquote&gt;
-  &lt;p&gt;“Yeah It’s on. ”&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;前言&quot;&gt;前言&lt;/h2&gt;
-
-&lt;p&gt;Hux 的 Blog 就这么开通了。&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;#build&quot;&gt;跳过废话，直接看技术实现 &lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;2015 年，Hux 总算有个地方可以好好写点东西了。&lt;/p&gt;
-
-&lt;p&gt;作为一个程序员， Blog 这种轮子要是挂在大众博客程序上就太没意思了。一是觉得大部分 Blog 服务都太丑，二是觉得不能随便定制不好玩。之前因为太懒没有折腾，结果就一直连个写 Blog 的地儿都没有。&lt;/p&gt;
-
-&lt;p&gt;在玩了一段时间知乎之后，答题的快感又激起了我开博客的冲动。之前的&lt;a href=&quot;http://huangxuan.me/portfolio&quot;&gt;个人网站&lt;/a&gt;是作品集形式的（现在集成进来了），并不适合用来写博文，一不做二不休，花一天搞一个吧！&lt;/p&gt;
-
-&lt;p id=&quot;build&quot;&gt;&lt;/p&gt;
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;正文&quot;&gt;正文&lt;/h2&gt;
-
-&lt;p&gt;接下来说说搭建这个博客的技术细节。&lt;/p&gt;
-
-&lt;p&gt;正好之前就有关注过 &lt;a href=&quot;https://pages.github.com/&quot;&gt;GitHub Pages&lt;/a&gt; + &lt;a href=&quot;http://jekyllrb.com/&quot;&gt;Jekyll&lt;/a&gt; 快速 Building Blog 的技术方案，非常轻松时尚。&lt;/p&gt;
-
-&lt;p&gt;其优点非常明显：&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Markdown&lt;/strong&gt; 带来的优雅写作体验&lt;/li&gt;
-  &lt;li&gt;非常熟悉的 Git workflow ，&lt;strong&gt;Git Commit 即 Blog Post&lt;/strong&gt;&lt;/li&gt;
-  &lt;li&gt;利用 GitHub Pages 的域名和免费无限空间，不用自己折腾主机
-    &lt;ul&gt;
-      &lt;li&gt;如果需要自定义域名，也只需要简单改改 DNS 加个 CNAME 就好了&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;Jekyll 的自定制非常容易，基本就是个模版引擎&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;本来觉得最大的缺点可能是 GitHub 在国内访问起来太慢，所以第二天一起床就到 GitCafe(Chinese GitHub Copy) 迁移了一个&lt;a href=&quot;http://huxpro.gitcafe.io&quot;&gt;镜像&lt;/a&gt;出来，结果还是巨慢。&lt;/p&gt;
-
-&lt;p&gt;哥哥可是个前端好嘛！ 果断开 Chrome DevTool 查了下网络请求，原来是 &lt;strong&gt;pending 在了 Google Fonts&lt;/strong&gt; 上，页面渲染一直被阻塞到请求超时为止，难怪这么慢。&lt;br /&gt;
-忍痛割爱，只好把 Web Fonts 去了（反正超时看到的也只能是 fallback ），果然一下就正常了，而且 GitHub 和 GitCafe 对比并没有感受到明显的速度差异，虽然 github 的 ping 值明显要高一些，达到了 300ms，于是用 DNSPOD 优化了一下速度。&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;配置的过程中也没遇到什么坑，基本就是 Git 的流程，相当顺手&lt;/p&gt;
-
-&lt;p&gt;大的 Jekyll 主题上直接 fork 了 Clean Blog（这个主题也相当有名，就不多赘述了。唯一的缺点大概就是没有标签支持，于是我给它补上了。）&lt;/p&gt;
-
-&lt;p&gt;本地调试环境需要 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gem install jekyll&lt;/code&gt;，结果 rubygem 的源居然被墙了……后来手动改成了我大淘宝的镜像源才成功&lt;/p&gt;
-
-&lt;p&gt;Theme 的 CSS 是基于 Bootstrap 定制的，看得不爽的地方直接在 Less 里改就好了（平时更习惯 SCSS 些），&lt;strong&gt;不过其实我一直觉得 Bootstrap 在移动端的体验做得相当一般，比我在淘宝参与的团队 CSS 框架差多了……&lt;/strong&gt;所以为了体验，也补了不少 CSS 进去&lt;/p&gt;
-
-&lt;p&gt;最后就进入了耗时反而最长的&lt;strong&gt;做图、写字&lt;/strong&gt;阶段，也算是进入了&lt;strong&gt;写博客&lt;/strong&gt;的正轨，因为是类似 Hack Day 的方式去搭这个站的，所以折腾折腾着大半夜就过去了。&lt;/p&gt;
-
-&lt;p&gt;第二天考虑中文字体的渲染，fork 了 &lt;a href=&quot;http://www.typeisbeautiful.com/&quot;&gt;Type is Beautiful&lt;/a&gt; 的 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;font&lt;/code&gt; CSS，调整了字号，适配了 Win 的渣渲染，中英文混排效果好多了。&lt;/p&gt;
-
-&lt;h2 id=&quot;后记&quot;&gt;后记&lt;/h2&gt;
-
-&lt;p&gt;回顾这个博客的诞生，纯粹是出于个人兴趣。在知乎相关问题上回答并获得一定的 star 后，我决定把这个博客主题当作一个小小的开源项目来维护。&lt;/p&gt;
-
-&lt;p&gt;在经历 v1.0 - v1.5 的蜕变后，这个博客主题愈发完整，不但增加了诸多 UI 层的优化（opinionated）；在代码层面，更加丰富的配置项也使得这个主题拥有了更好的灵活性与可拓展性。而作为一个开源项目，我也积极的为其完善文档与解决 issue。&lt;/p&gt;
-
-&lt;p&gt;如果你恰好逛到了这里，希望你也能喜欢这个博客主题。&lt;/p&gt;
-
-&lt;p&gt;—— Hux 后记于 2015.10&lt;/p&gt;
-</description>
-        <pubDate>Thu, 29 Jan 2015 20:00:00 +0800</pubDate>
-        <link>http://localhost:4000/2015/01/29/hello-2015/</link>
-        <guid isPermaLink="true">http://localhost:4000/2015/01/29/hello-2015/</guid>
-        
-        <category>生活</category>
         
         
       </item>
