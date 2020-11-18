@@ -25,7 +25,7 @@ baseurl: ""         # for example, '/blog' if your blog hosted on 'host/blog'
 
 # SNS settings
 RSS: false
-weibo_username:     "黑化养乐多"
+weibo_username:     黑化养乐多
 #zhihu_username:
 github_username:    kyokoning
 #twitter_username:  huxpro
@@ -60,7 +60,7 @@ kramdown:
 
 
 # Disqus settings
-disqus_username: xnchen
+disqus_username: _xnchen_
 
 # Duoshuo settings
 # duoshuo_username: huxblog
