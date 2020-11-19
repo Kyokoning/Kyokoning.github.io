@@ -62,7 +62,7 @@ DAC19
 3. Tile-Arch：用于DNN实现的低延迟FPGA加速器模板。
 4. auto-HLS：快速的board-level design 生成器，将DNN自动映射到FPGA。
 
-![image](https://github.com/Kyokoning/Kyokoning.github.io/tree/main/img/paper-cut/DNN Co-Design-1604140783256.png)
+![image](https://github.com/Kyokoning/Kyokoning.github.io/blob/main/img/paper-cut/DNN%20Co-Design-1604140783256.png?raw=true)
 
 整个流程的输入包括了：
 - 目标任务
