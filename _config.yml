@@ -35,6 +35,7 @@ github_username:    kyokoning
 
 # Build settings
 # from 2016, 'pygments' is unsupported on GitHub Pages. Use 'rouge' for highlighting instead.
+
 highlighter: rouge
 permalink: pretty
 paginate: 10
@@ -56,8 +57,6 @@ gems: [jekyll-paginate]
 markdown: kramdown
 kramdown:
   input: GFM                            # use Github Flavored Markdown !important
-highlighter: rouge
-
 
 # Disqus settings
 disqus_username: blog-imqwpqyikg
