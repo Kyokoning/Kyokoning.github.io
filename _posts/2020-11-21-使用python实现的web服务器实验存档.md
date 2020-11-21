@@ -20,6 +20,10 @@ test post
     import threading
     import re
     import os
+    {% endhighlight %}
+    
+test 2
+
     def server_enter(address='', port=12000):
         server_socket = socket(AF_INET, SOCK_STREAM)
         server_socket.bind((address, port))
