@@ -11,6 +11,9 @@ tags:
     - socket
 ---
 
+![](/asset/.2020-11-21-使用python实现的web服务器实验存档_images/166f1748.png)
+
+    {% highlight ruby %}
     #import socket module
     from socket import *
     import threading
