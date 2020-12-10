@@ -33,7 +33,7 @@ tags:
 
 1. 使用PicGo可以自动上传图片
 
-```json
+```shell
 // 使用node package manager安装picGo-Core
 brew install node
 // 查看是否安装node成功
