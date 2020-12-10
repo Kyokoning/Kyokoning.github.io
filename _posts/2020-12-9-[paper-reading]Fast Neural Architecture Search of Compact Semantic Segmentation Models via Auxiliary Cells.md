@@ -59,7 +59,7 @@ controller控制生成encoder和decoder之间的连接结构，以及每个链�
 
 搜索空间整体如下图所示，使用了传统的encoder-decoder结构，其中encoder模型使用的是pretrained MobileNet-v2，而decoder模型则使用controller生成。
 
-![image-20201210202439940](/Users/xnchen/Library/Application Support/typora-user-images/image-20201210202439940.png)
+<img src="/Users/xnchen/Library/Application Support/typora-user-images/image-20201210204331695.png" alt="image-20201210204331695" style="zoom:50%;" />
 
 encoder有四个层的不同分辨率的输出，输入到1x1conv中保证通道数相同。
 
@@ -75,7 +75,7 @@ encoder有四个层的不同分辨率的输出，输入到1x1conv中保证通道
 
 然后经过相同结构、不同weight的cell之后，结果进行concat，并且加入候选candidate set，继续下一个block的选择（这个把结果加入candidate set的操作在本文中被包装成replacement这个词，不明所以）
 
-![image-20201210202456497](/Users/xnchen/Library/Application Support/typora-user-images/image-20201210202456497.png)
+<img src="https://raw.githubusercontent.com/Kyokoning/image-bed/dev/img/blog-img/image-20201210204106431.png" alt="image-20201210204106431" style="zoom: 25%;" />
 
 在本文中，block被设置为三。
 
@@ -89,7 +89,7 @@ encoder有四个层的不同分辨率的输出，输入到1x1conv中保证通道
 
 然后接下来的每轮，在candidate set中选择2个输入和op，结果concat，加入candidate set。（这里也是replacement，完全不明所以）
 
-![image-20201210202514680](/Users/xnchen/Library/Application Support/typora-user-images/image-20201210202514680.png)
+<img src="/Users/xnchen/Library/Application Support/typora-user-images/image-20201210204419551.png" alt="image-20201210204419551" style="zoom: 33%;" />
 
 这张图的黑线是实际上选择的route，虚线是可以选择的route。
 
@@ -97,7 +97,7 @@ encoder有四个层的不同分辨率的输出，输入到1x1conv中保证通道
 
 所有可能的op：
 
-![image-20201210202525876](/Users/xnchen/Library/Application Support/typora-user-images/image-20201210202525876.png)
+<img src="/Users/xnchen/Library/Application Support/typora-user-images/image-20201210204506602.png" alt="image-20201210204506602" style="zoom: 33%;" />
 
 #### 3.2 搜索策略
 
@@ -125,4 +125,4 @@ reforcement learning有两个的优化：外部的优化对controller进行，�
 
 follow了simple baseline那篇的搜索设置。
 
-![image-20201210202538064](https://raw.githubusercontent.com/Kyokoning/image-bed/dev/img/blog-img/image-20201210202538064.png)
+<img src="https://raw.githubusercontent.com/Kyokoning/image-bed/dev/img/blog-img/image-20201210202538064.png" alt="image-20201210202538064" style="zoom: 50%;" />
