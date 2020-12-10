@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "FPGA/DNN Co-Design: An Efficient Design Methodology for IoT Intelligence on the Edge"
+title:      "[paper-reading]FPGA/DNN Co-Design: An Efficient Design Methodology for IoT Intelligence on the Edge"
 subtitle:   "NAS的FPGA实现paper reading"
 date:       2020-10-31 18:28:00
 author:     "xnchen"

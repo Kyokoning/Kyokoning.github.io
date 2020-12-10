@@ -8,6 +8,7 @@ header-img: "img/home-bg.jpg"
 tags:
     - gradient-based leanring
     - NAS
+    - paper reading
 ---
 
 [TOC]
