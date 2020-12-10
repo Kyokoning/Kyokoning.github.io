@@ -12,3 +12,8 @@ tags:
 ### abstract
 
 test post
+
+![image-20201210170937420](/Users/xnchen/Library/Application Support/typora-user-images/image-20201210170937420.png)picgo use uploader
+
+
+
