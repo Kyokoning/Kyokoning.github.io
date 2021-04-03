@@ -1,3 +1,3 @@
 # xnchen blog
 
-[click here](kyokoning.github.io)
+[click here](https://kyokoning.github.io)
