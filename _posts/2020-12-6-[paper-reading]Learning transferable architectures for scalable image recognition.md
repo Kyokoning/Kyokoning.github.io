@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "[paper-reading]Learning transferable architectures for scalable image recognition"
+title:      "2020-12-6-[paper-reading]Learning transferable architectures for scalable image recognition"
 subtitle:   ""
 date:       2020-12-6 16:40:00
 author:     "xnchen"
