@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "2020-12-12-pytorch中hook的使用"
+title:      "pytorch中hook的使用"
 subtitle:   ""
 date:       2020-12-12 21:16:00
 author:     "xnchen"

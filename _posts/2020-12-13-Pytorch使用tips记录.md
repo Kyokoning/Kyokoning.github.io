@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "2020-12-13-Pytorch使用tips记录"
+title:      "Pytorch使用tips记录"
 subtitle:   ""
 date:       2020-12-14 15:40:41
 author:     "xnchen"
