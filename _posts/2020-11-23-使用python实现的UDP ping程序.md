@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "使用python实现的UDP ping程序实验存档"
+title:      "2020-11-23-使用python实现的UDP ping程序"
 subtitle:   ""
 date:       2020-11-23 16:40:00
 author:     "xnchen"

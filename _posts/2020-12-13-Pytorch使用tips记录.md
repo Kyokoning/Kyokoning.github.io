@@ -7,6 +7,7 @@ author:     "xnchen"
 header-img: "img/home-bg.jpg"
 tags:
     - Pytorch
+	- 学习存档
 ---
 
 [TOC]
