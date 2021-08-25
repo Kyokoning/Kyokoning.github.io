@@ -7,8 +7,8 @@ author:     "xnchen"
 header-img: "img/home-bg.jpg"
 tags:
     - JavaScript
-	- 前端
-	- 学习存档
+    - 前端
+    - 学习存档
 ---
 
 [TOC]
